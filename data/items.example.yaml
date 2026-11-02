@@ -1,0 +1,16 @@
+# Copy to data/items.yaml. Phase 1 will import this from the Google Sheet.
+items:
+  - name: 2% milk
+    size: 1 gallon
+    quantity: 2
+    every_weeks: 1
+    last_bought: 2026-10-26
+    avoid_brands: []
+    keeps_well: false
+  - name: Paper towels
+    size: 6 rolls
+    quantity: 1
+    every_weeks: 4
+    last_bought: 2026-10-12
+    avoid_brands: []
+    keeps_well: true

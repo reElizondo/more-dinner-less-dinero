@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.profiles/
+probe-output/
+config/settings.yaml
+data/items.yaml
+data/*.db
+.env

@@ -1,0 +1,15 @@
+# Copy to config/settings.yaml and adjust. Fees and minimums change; check each store.
+stores:
+  walmart:
+    pickup_minimum: 35.00     # verify current value
+    pickup_fee_below_min: 0.00
+  heb:
+    store_name: "Your H-E-B store"
+    pickup_minimum: 0.00      # verify current value
+    pickup_fee: 0.00          # verify current value
+
+split:
+  second_stop_cost: 5.00      # only split if savings exceed this
+
+stock_up:
+  min_discount_pct: 20        # suggest buying ahead only above this discount
