@@ -1,5 +1,5 @@
 [project]
-name = "grocery-planner"
+name = "more-dinner-less-dinero"
 version = "0.0.1"
 description = "Plans weekly grocery orders across Walmart and H-E-B curbside pickup"
 requires-python = ">=3.12"

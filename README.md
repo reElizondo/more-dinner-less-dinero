@@ -1,4 +1,4 @@
-# Grocery Planner
+# More Dinner, Less Dinero
 
 Plans the weekly grocery order across **Walmart** and **H-E-B** curbside pickup.
 
@@ -151,5 +151,5 @@ discovery is the point of Phase 0.
 config/settings.example.yaml   store fees, minimums, thresholds
 data/items.example.yaml        example item list format
 scripts/phase0_probe.py        Phase 0 feasibility probe
-src/grocery_planner/           application package (Phase 1+)
+src/more_dinner_less_dinero/          application package (Phase 1+)
 ```
