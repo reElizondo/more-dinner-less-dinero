@@ -54,6 +54,21 @@ _Last updated 2026-11-14._
 - Next: contact walmart.io support with the 412 details and ask what
   production requires; follow up with the affiliate team. Use
   `keys/walmart_prod2_*.pem` for the next attempt.
+- **Online Pickup & Delivery (OPD) APIs** (walmart.io/docs/opd), a
+  subscription-based alternative: real-time price and availability by
+  `storeId` and/or zip, daily price/catalog snapshots, store locator,
+  taxonomy. Same host (`developer.api.walmart.com/api-proxy/service`, paths
+  `/affil/catalog-api/v2/...`) but **OAuth** auth (consumer ID + client
+  secret → bearer token), not RSA signing. Access: "All 3rd parties must
+  first set up an account with Impact Radius" (Walmart's affiliate
+  tracking), then "Request Access"; a Walmart business manager decides
+  whether you fit their private partnership network and may not reply.
+- Likely link to the 412: production may also need an Impact affiliate
+  account. Next: sign up as a Walmart affiliate on Impact, then retry the
+  Affiliate API prod key.
+- OPD subscription requested 2026-11-15 for `more-dinner-less-dinero`,
+  **STAGING** (production can't be requested until the app has a production
+  consumer ID). Status: PENDING; Walmart replies by email.
 - Permission for this personal use was requested by email from Walmart's
   affiliate team (affilops@wal-mart.com); no reply yet.
 - Not yet verified: whether a multi-item cart link (`items=id|qty,id`) works.
