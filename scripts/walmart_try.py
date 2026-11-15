@@ -39,6 +39,8 @@ def client() -> WalmartClient:
 
 
 def show(products) -> None:
+    if not products:
+        print("No results.")
     for p in products:
         disc = f"  ({p.discount_pct}% off ${p.msrp})" if p.discount_pct else ""
         flags = " CLEARANCE" if p.clearance else ""
