@@ -1,6 +1,7 @@
-# Copy to data/items.yaml. Phase 1 will import this from the Google Sheet.
+# Created by scripts/import_sheet.py as data/items.yaml; edit schedules there.
 items:
   - name: 2% milk
+    category: Fridge
     size: 1 gallon
     quantity: 2
     every_weeks: 1
@@ -8,9 +9,12 @@ items:
     avoid_brands: []
     keeps_well: false
   - name: Paper towels
+    category: Cosmetic
     size: 6 rolls
     quantity: 1
-    every_weeks: 4
+    every_weeks: 2
     last_bought: 2026-10-12
     avoid_brands: []
     keeps_well: true
+meals:
+  - Tacos

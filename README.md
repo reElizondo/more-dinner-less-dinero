@@ -20,7 +20,7 @@ blocked on Walmart's side. See [Current status](#current-status).
 
 ## Current status
 
-_Last updated 2026-11-15._
+_Last updated 2026-11-14._
 
 **Walmart API (walmart.io)**
 
@@ -39,8 +39,21 @@ _Last updated 2026-11-15._
   (`addPublicKey ... status code 503`). The network response did return a prod
   consumer ID `c027eede-d237-436e-bbd5-45cef7f7c400`, but the dashboard doesn't
   show it and the API answers `401 Public Key not found for Consumer id`. The
-  key never got attached. Next: retry the upload (environment PRODUCTION); if
-  it fails again, contact walmart.io support with those errors.
+  key never got attached.
+- Retried 2026-11-14 on `mas-dinner-less-dinero`, environment PRODUCTION:
+  `POST /addPublicKey` returns HTTP 200 with body `{"status":412}`, and the
+  dashboard still shows no prod consumer ID. A brand-new key pair
+  (`keys/walmart_prod2_*.pem`) got the same 412, so the key isn't the problem;
+  the app's production setup looks stuck after the first 503. The API still
+  answers `401 Public Key not found` for `c027eede-…`.
+- Adding production to the other app, `more-dinner-less-dinero` (new key
+  pair), also returned `{"status":412}`. The 412 affects the whole account,
+  not one app: walmart.io seems to require something before it grants
+  production at all, probably affiliate approval (still waiting on
+  affilops@wal-mart.com).
+- Next: contact walmart.io support with the 412 details and ask what
+  production requires; follow up with the affiliate team. Use
+  `keys/walmart_prod2_*.pem` for the next attempt.
 - Permission for this personal use was requested by email from Walmart's
   affiliate team (affilops@wal-mart.com); no reply yet.
 - Not yet verified: whether a multi-item cart link (`items=id|qty,id`) works.
@@ -48,7 +61,8 @@ _Last updated 2026-11-15._
 **Next up**
 
 1. Get the production key working, then run a real search and lookup.
-2. Import the item list from the Google Sheet (format not yet shared).
+2. Fill in quantities and sizes in `data/items.yaml` as needed (schedules
+   start weekly; see [Weekly schedule](#weekly-schedule)).
 3. Onboarding: match items to Walmart products and record H-E-B products and
    prices, stored in SQLite.
 
@@ -138,7 +152,7 @@ when the discount is above a threshold.
 - [x] Verify signing against the sandbox API
 - [ ] Get the production key attached and run a live search
 - [ ] Test whether a multi-item cart link works
-- [ ] Import the item list from the Google Sheet
+- [x] Import the item list from the Google Sheet (names, categories, meals)
 - [ ] Onboarding: match each item to a Walmart product (AI-assisted, you
       approve) and record its H-E-B product and price; store in SQLite
 
@@ -196,6 +210,39 @@ Notes from setup:
   key matches what you uploaded with
   `openssl rsa -in <private_key>.pem -pubout`.
 
+### Import the item list
+
+The "Grocery Essentials" Google Sheet has one column per category (Fridge,
+Pantry, Snacks, Cosmetic, Meat, Spices) with item names below. A block that
+follows a blank gap in a column (currently the meals under Cosmetic) is
+imported as `meals`.
+
+```bash
+python scripts/import_sheet.py --sheet-url "<sheet link>"
+```
+
+This writes `data/items.yaml` (git-ignored). The sheet only has names, so
+schedules, quantities, sizes and brand rules are set in that file; re-running
+the import keeps them, adds new sheet items and reports removed ones. Every
+item starts at `every_weeks: 1`.
+
+### Weekly schedule
+
+Everything starts **every week**. An item is due once `every_weeks` weeks have
+passed since it was last bought. At the start of each week, anything you
+**still have** is skipped that week and its interval grows by one week
+(1 → 2, 2 → 3, ...), so it comes up again at the new interval counted from
+when it was last bought.
+
+```bash
+python scripts/week.py due                     # what's due this week
+python scripts/week.py have milk "egg whites"  # still have these
+python scripts/week.py ordered --due           # bought everything due
+```
+
+Names match exactly or by a unique part ("thighs" → Chicken Thighs). If the
+sheet isn't link-shared, download it as CSV and use `--csv <file>`.
+
 ### Try it
 
 ```bash
@@ -209,7 +256,10 @@ python scripts/walmart_try.py cart <itemId>:2 <itemId>
 ```
 config/settings.example.yaml          API settings, store fees, thresholds
 data/items.example.yaml               example item list format
+scripts/import_sheet.py               import the item list from the Google Sheet
+scripts/week.py                       weekly schedule: due, still have, ordered
 scripts/walmart_try.py                try the Walmart API from the command line
+src/more_dinner_less_dinero/items.py    sheet import and weekly schedule
 src/more_dinner_less_dinero/walmart.py  Walmart Affiliate API client
 tests/                                unit tests
 ```
