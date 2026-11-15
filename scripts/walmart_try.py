@@ -27,7 +27,14 @@ def client() -> WalmartClient:
     if not settings_path.exists():
         sys.exit("Copy config/settings.example.yaml to config/settings.yaml and fill in the walmart section.")
     cfg = yaml.safe_load(settings_path.read_text())["walmart"]
-    return WalmartClient(cfg["consumer_id"], cfg["private_key_path"], cfg.get("key_version", "1"),
+    key_path = Path(cfg["private_key_path"]).expanduser()
+    if not key_path.is_absolute():
+        key_path = ROOT / key_path
+    if not key_path.exists():
+        found = sorted(str(p.relative_to(ROOT)) for p in ROOT.rglob("*.pem") if ".venv" not in p.parts)
+        sys.exit(f"Private key not found: {key_path}\n.pem files in the project: {found or 'none'}")
+    print(f"Using {cfg.get('environment', 'prod')} environment, consumer ID {cfg['consumer_id']}")
+    return WalmartClient(cfg["consumer_id"], key_path, cfg.get("key_version", "1"),
                          cfg.get("zip_code"), environment=cfg.get("environment", "prod"))
 
 
