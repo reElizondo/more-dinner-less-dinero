@@ -4,11 +4,13 @@ version = "0.0.1"
 description = "Plans weekly grocery orders across Walmart and H-E-B curbside pickup"
 requires-python = ">=3.12"
 dependencies = [
-    "playwright>=1.47",
+    "cryptography>=42",
     "pyyaml>=6.0",
+    "requests>=2.31",
 ]
 
 [project.optional-dependencies]
+dev = ["pytest>=8"]
 later = ["anthropic", "typer"]
 
 [build-system]
@@ -17,3 +19,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

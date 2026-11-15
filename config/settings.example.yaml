@@ -1,4 +1,11 @@
-# Copy to config/settings.yaml and adjust. Fees and minimums change; check each store.
+# Copy to config/settings.yaml (not committed) and fill in.
+
+walmart:
+  consumer_id: "your-consumer-id-from-walmart.io"
+  key_version: "1"
+  private_key_path: "keys/walmart_private_key.pem"   # never commit this file
+  zip_code: "78701"                                  # your zip, for local pricing
+
 stores:
   walmart:
     pickup_minimum: 35.00     # verify current value
