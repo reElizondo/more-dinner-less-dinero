@@ -28,7 +28,7 @@ def client() -> WalmartClient:
         sys.exit("Copy config/settings.example.yaml to config/settings.yaml and fill in the walmart section.")
     cfg = yaml.safe_load(settings_path.read_text())["walmart"]
     return WalmartClient(cfg["consumer_id"], cfg["private_key_path"], cfg.get("key_version", "1"),
-                         cfg.get("zip_code"))
+                         cfg.get("zip_code"), environment=cfg.get("environment", "prod"))
 
 
 def show(products) -> None:

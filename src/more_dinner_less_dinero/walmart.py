@@ -20,7 +20,11 @@ import requests
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
-BASE_URL = "https://developer.api.walmart.com/api-proxy/service/affil/product/v2"
+BASE_URLS = {
+    "prod": "https://developer.api.walmart.com/api-proxy/service/affil/product/v2",
+    # Stage host follows Walmart's usual ".stg." pattern; not confirmed in the affiliate docs.
+    "stage": "https://developer.api.stg.walmart.com/api-proxy/service/affil/product/v2",
+}
 LOOKUP_BATCH = 20
 
 
@@ -81,12 +85,14 @@ class Product:
 
 class WalmartClient:
     def __init__(self, consumer_id: str, private_key_path: str | Path, key_version: str = "1",
-                 zip_code: str | None = None, session: requests.Session | None = None):
+                 zip_code: str | None = None, session: requests.Session | None = None,
+                 environment: str = "prod"):
         self.consumer_id = consumer_id
         self.key_version = str(key_version)
         self.private_key_pem = Path(private_key_path).expanduser().read_bytes()
         self.zip_code = zip_code
         self.http = session or requests.Session()
+        self.base_url = BASE_URLS[environment]
 
     def _headers(self) -> dict[str, str]:
         ts = int(time.time() * 1000)
@@ -99,7 +105,7 @@ class WalmartClient:
         }
 
     def _get(self, path: str, params: dict) -> dict:
-        resp = self.http.get(f"{BASE_URL}/{path}", params=params, headers=self._headers(), timeout=30)
+        resp = self.http.get(f"{self.base_url}/{path}", params=params, headers=self._headers(), timeout=30)
         if resp.status_code >= 400:
             raise RuntimeError(f"Walmart API {resp.status_code}: {resp.text[:500]}")
         return resp.json()

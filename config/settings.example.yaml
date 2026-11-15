@@ -1,6 +1,7 @@
 # Copy to config/settings.yaml (not committed) and fill in.
 
 walmart:
+  environment: "prod"                                # "prod" or "stage", matching the consumer ID
   consumer_id: "your-consumer-id-from-walmart.io"
   key_version: "1"
   private_key_path: "keys/walmart_private_key.pem"   # never commit this file
