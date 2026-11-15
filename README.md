@@ -13,9 +13,44 @@ Each week it:
    **Checkout and pickup-slot selection are done by hand**; the app never logs
    in to a store, places orders or touches payment.
 
-Status: **Phase 1** — Walmart API client built; item import next.
+Status: **Phase 1** — Walmart API client works on sandbox; production key
+blocked on Walmart's side. See [Current status](#current-status).
 
 ---
+
+## Current status
+
+_Last updated 2026-11-15._
+
+**Walmart API (walmart.io)**
+
+- Signing works: a search against the **sandbox** (`environment: "stage"`)
+  returned HTTP 200 with no error. The sandbox returned no products, which is
+  normal for a test environment.
+- Two walmart.io applications exist:
+  - `more-dinner-less-dinero` (Web Application): **sandbox** consumer ID
+    `f65b8b7e-ea47-4eca-8b16-618e89509499`, key version 1, key
+    `keys/walmart_private_key.pem`.
+  - `mas-dinner-less-dinero` (Desktop Application): created for **production**.
+- Walmart rejects reusing the sandbox public key for production, so production
+  has its own pair: `keys/walmart_prod_private_key.pem` /
+  `keys/walmart_prod_public_key.pem`.
+- **Blocker:** uploading the production public key shows a 503 error
+  (`addPublicKey ... status code 503`). The network response did return a prod
+  consumer ID `c027eede-d237-436e-bbd5-45cef7f7c400`, but the dashboard doesn't
+  show it and the API answers `401 Public Key not found for Consumer id`. The
+  key never got attached. Next: retry the upload (environment PRODUCTION); if
+  it fails again, contact walmart.io support with those errors.
+- Permission for this personal use was requested by email from Walmart's
+  affiliate team (affilops@wal-mart.com); no reply yet.
+- Not yet verified: whether a multi-item cart link (`items=id|qty,id`) works.
+
+**Next up**
+
+1. Get the production key working, then run a real search and lookup.
+2. Import the item list from the Google Sheet (format not yet shared).
+3. Onboarding: match items to Walmart products and record H-E-B products and
+   prices, stored in SQLite.
 
 ## Phase 0 results: browser automation is out
 
@@ -100,7 +135,8 @@ when the discount is above a threshold.
 ### Phase 1 — Data and onboarding (current)
 
 - [x] Walmart API client: signing, search, lookup, cart links
-- [ ] Verify the client against the live API with real keys
+- [x] Verify signing against the sandbox API
+- [ ] Get the production key attached and run a live search
 - [ ] Test whether a multi-item cart link works
 - [ ] Import the item list from the Google Sheet
 - [ ] Onboarding: match each item to a Walmart product (AI-assisted, you
@@ -148,7 +184,17 @@ pytest
    dashboard. You'll get a consumer ID. The private key never leaves your
    laptop; `keys/` and `*.pem` are git-ignored.
 4. Copy `config/settings.example.yaml` to `config/settings.yaml` and fill in
-   the consumer ID, key version (usually `1`) and your zip code.
+   the environment (`prod` or `stage`, matching the consumer ID), consumer ID,
+   key version (usually `1`), private key path and your zip code.
+
+Notes from setup:
+
+- Production and sandbox need **different** key pairs; walmart.io rejects
+  reusing one.
+- The walmart.io page can show an error even when part of the upload
+  succeeded. Check the browser's network response, and verify which private
+  key matches what you uploaded with
+  `openssl rsa -in <private_key>.pem -pubout`.
 
 ### Try it
 
