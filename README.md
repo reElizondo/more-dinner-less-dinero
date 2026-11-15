@@ -115,13 +115,24 @@ version would most likely go through the affiliate program properly.
 
 ### H-E-B: no API
 
-No public API, automation blocked, and Instacart's developer platform accepts
-only product names, can't target a store and doesn't return prices. Plan:
+No public API, and automation is blocked. Instacart's Developer Platform
+(checked 2026-11-14) doesn't help with prices: its shopping-list endpoint
+takes item names, UPCs or Instacart product IDs and returns only a link; the
+shopper picks the store on Instacart's page, and no endpoint returns
+prices. Its nearby-retailers endpoint lists retailers by zip, not stores. It
+could build an H-E-B cart on Instacart, but that checks out through
+Instacart (its own prices and fees), not heb.com curbside. Plan:
 
-1. **Stored prices:** keep a last-known price per item and ask the user to
-   confirm only the close calls each week.
-2. **Later:** H-E-B weekly ad / digital coupons for sales, and receipts to keep
-   stored prices current.
+1. **Apify scraper** ([zaiq/heb-scraper](https://apify.com/zaiq/heb-scraper)),
+   a paid third-party service that reads heb.com for a chosen store: curbside
+   and in-store price, unit price, size, sale / weekly-ad / coupon flags.
+   About $0.006 per product. Tested 2026-11-14 at a local store: 9 products
+   for $0.074, and four prices matched heb.com. It scrapes heb.com
+   against H-E-B's terms (no H-E-B login involved); this project doesn't run
+   its own scraper. Curbside prices are about 5% above in-store; the app
+   compares curbside.
+2. **Manual entry** as the fallback, and to override a fetched price.
+3. **Later:** receipts to keep prices current from what you actually paid.
 
 ## Design decisions
 
@@ -168,8 +179,12 @@ when the discount is above a threshold.
 - [ ] Get the production key attached and run a live search
 - [ ] Test whether a multi-item cart link works
 - [x] Import the item list from the Google Sheet (names, categories, meals)
+- [x] Weekly schedule (every week; "still have it" stretches the interval)
+- [x] H-E-B prices: Apify scraper for your store plus manual entry, stored
+      in SQLite with history and unit prices
+- [ ] Pick an H-E-B product for each item (`heb.py pick`)
 - [ ] Onboarding: match each item to a Walmart product (AI-assisted, you
-      approve) and record its H-E-B product and price; store in SQLite
+      approve); needs Walmart search (production access)
 
 ### Phase 2 — Weekly run
 
@@ -258,6 +273,31 @@ python scripts/week.py ordered --due           # bought everything due
 Names match exactly or by a unique part ("thighs" → Chicken Thighs). If the
 sheet isn't link-shared, download it as CSV and use `--csv <file>`.
 
+### H-E-B prices
+
+Set `stores.heb.store_id` in `config/settings.yaml` (your pickup store's
+number) and put an Apify API token in your shell:
+
+```bash
+read -s "t?Apify token: " && echo "export APIFY_TOKEN=\"$t\"" >> ~/.zshrc && unset t
+```
+
+```bash
+python scripts/heb.py pick --category Fridge    # search H-E-B, choose a product per item (once)
+python scripts/heb.py fetch                     # refresh prices for chosen products (weekly)
+python scripts/heb.py show                      # current prices
+python scripts/heb.py todo                      # items with no H-E-B product yet
+python scripts/heb.py enter --category Pantry   # or type prices in by hand
+python scripts/heb.py set milk 3.29             # override one price by hand
+```
+
+`pick` and `fetch` show an estimated cost and ask before calling Apify
+(`--yes` skips the question). Prices are curbside. Sizes become a price per
+oz, fl oz or each, so stores compare by unit price; for produce typed in by
+hand, use `1 lb` and the per-lb price. Every entry is kept with its date and
+source in `data/grocery.db` (git-ignored): the newest is current, and on the
+same day a typed-in price wins over a fetched one.
+
 ### Try it
 
 ```bash
@@ -271,10 +311,14 @@ python scripts/walmart_try.py cart <itemId>:2 <itemId>
 ```
 config/settings.example.yaml          API settings, store fees, thresholds
 data/items.example.yaml               example item list format
+scripts/heb.py                        H-E-B prices: pick, fetch, enter, show
 scripts/import_sheet.py               import the item list from the Google Sheet
 scripts/week.py                       weekly schedule: due, still have, ordered
 scripts/walmart_try.py                try the Walmart API from the command line
+src/more_dinner_less_dinero/apify.py    H-E-B prices via the Apify scraper
+src/more_dinner_less_dinero/heb.py      stored H-E-B prices (SQLite)
 src/more_dinner_less_dinero/items.py    sheet import and weekly schedule
+src/more_dinner_less_dinero/units.py    package sizes and unit prices
 src/more_dinner_less_dinero/walmart.py  Walmart Affiliate API client
 tests/                                unit tests
 ```

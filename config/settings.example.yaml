@@ -13,6 +13,7 @@ stores:
     pickup_fee_below_min: 0.00
   heb:
     store_name: "Your H-E-B store"
+    store_id: "123"           # your H-E-B store number, for Apify prices (heb.com store page)
     pickup_minimum: 0.00      # verify current value
     pickup_fee: 0.00          # verify current value
 
